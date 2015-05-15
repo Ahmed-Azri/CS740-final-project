@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+function hadoop_usage
+{
+  echo "Usage: mapred [--config confdir] [--daemon (start|stop|status)] COMMAND"
+  echo "       where COMMAND is one of:"
+  
+  echo "  archive -archiveName NAME -p <parent path> <src>* <dest> create a hadoop archive"
+  echo "  classpath            prints the class path needed for running"
+  echo "                       mapreduce subcommands"
+  echo "  distcp <srcurl> <desturl> copy file or directories recursively"
+  echo "  job                  manipulate MapReduce jobs"
+  echo "  historyserver        run job history servers as a standalone daemon"
+  echo "  pipes                run a Pipes job"
+  echo "  queue                get information regarding JobQueues"
+  echo "  sampler              sampler"
+  echo "  version              print the version"
+  echo ""
+  echo "Most commands print help when invoked w/o parameters."
+}
+
+this="${BASH_SOURCE-$0}"
+bin=$(cd -P -- "$(dirname -- "${this}")" >/dev/null && pwd -P)
+
+# let's locate libexec...
+if [[ -n "${HADOOP_PREFIX}" ]]; then
+  DEFAULT_LIBEXEC_DIR="${HADOOP_PREFIX}/libexec"
+else
+  DEFAULT_LIBEXEC_DIR="${bin}/../libexec"
+fi
+
+HADOOP_LIBEXEC_DIR="${HADOOP_LIBEXEC_DIR:-$DEFAULT_LIBEXEC_DIR}"
+# shellcheck disable=SC2034
+HADOOP_NEW_CONFIG=true
+if [[ -f "${HADOOP_LIBEXEC_DIR}/mapred-config.sh" ]]; then
+  . "${HADOOP_LIBEXEC_DIR}/mapred-config.sh"
+else
+  echo "ERROR: Cannot execute ${HADOOP_LIBEXEC_DIR}/mapred-config.sh." 2>&1
+  exit 1
+fi
+
+
+if [ $# = 0 ]; then
+  hadoop_exit_with_usage 1
+fi
+
+COMMAND=$1
+shift
+
+case ${COMMAND} in
+  mradmin|jobtracker|tasktracker|groups)
+    echo "Sorry, the ${COMMAND} command is no longer supported."
+    echo "You may find similar functionality with the \"yarn\" shell command."
+    hadoop_exit_with_usage 1
+  ;;
+  archive)
+    CLASS=org.apache.hadoop.tools.HadoopArchives
+    hadoop_add_classpath "${TOOL_PATH}"
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_CLIENT_OPTS}"
+  ;;
+  classpath)
+    hadoop_finalize
+    echo "${CLASSPATH}"
+    exit 0
+  ;;
+  distcp)
+    CLASS=org.apache.hadoop.tools.DistCp
+    hadoop_add_classpath "${TOOL_PATH}"
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_CLIENT_OPTS}"
+  ;;
+  historyserver)
+    daemon="true"
+    CLASS=org.apache.hadoop.mapreduce.v2.hs.JobHistoryServer
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_JOB_HISTORYSERVER_OPTS}"
+    if [ -n "${HADOOP_JOB_HISTORYSERVER_HEAPSIZE}" ]; then
+      JAVA_HEAP_MAX="-Xmx${HADOOP_JOB_HISTORYSERVER_HEAPSIZE}m"
+    fi
+    HADOOP_DAEMON_ROOT_LOGGER=${HADOOP_JHS_LOGGER:-$HADOOP_DAEMON_ROOT_LOGGER}
+  ;;
+  job)
+    CLASS=org.apache.hadoop.mapred.JobClient
+  ;;
+  pipes)
+    CLASS=org.apache.hadoop.mapred.pipes.Submitter
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_CLIENT_OPTS}"
+  ;;
+  queue)
+    CLASS=org.apache.hadoop.mapred.JobQueueClient
+  ;;
+  sampler)
+    CLASS=org.apache.hadoop.mapred.lib.InputSampler
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_CLIENT_OPTS}"
+  ;;
+  version)
+    CLASS=org.apache.hadoop.util.VersionInfo
+    HADOOP_OPTS="${HADOOP_OPTS} ${HADOOP_CLIENT_OPTS}"
+  ;;
+  -*|*)
+    hadoop_exit_with_usage 1
+  ;;
+esac
+
+daemon_outfile="${HADOOP_LOG_DIR}/hadoop-${HADOOP_IDENT_STRING}-${COMMAND}-${HOSTNAME}.out"
+daemon_pidfile="${HADOOP_PID_DIR}/hadoop-${HADOOP_IDENT_STRING}-${COMMAND}.pid"
+
+
+if [[  "${HADOOP_DAEMON_MODE}" != "default" ]]; then
+  # shellcheck disable=SC2034
+  HADOOP_ROOT_LOGGER="${HADOOP_DAEMON_ROOT_LOGGER}"
+  hadoop_add_param HADOOP_OPTS mapred.jobsummary.logger "-Dmapred.jobsummary.logger=${HADOOP_ROOT_LOGGER}"
+  # shellcheck disable=SC2034
+  HADOOP_LOGFILE="hadoop-${HADOOP_IDENT_STRING}-${COMMAND}-${HOSTNAME}.log"
+fi
+
+hadoop_add_param HADOOP_OPTS Xmx "${JAVA_HEAP_MAX}"
+hadoop_finalize
+
+export CLASSPATH
+
+if [[ -n "${daemon}" ]]; then
+  if [[ -n "${secure_service}" ]]; then
+    hadoop_secure_daemon_handler "${HADOOP_DAEMON_MODE}" "${COMMAND}"\
+    "${CLASS}" "${daemon_pidfile}" "${daemon_outfile}" \
+    "${priv_pidfile}" "${priv_outfile}" "${priv_errfile}" "$@"
+  else
+    hadoop_daemon_handler "${HADOOP_DAEMON_MODE}" "${COMMAND}" "${CLASS}" \
+    "${daemon_pidfile}" "${daemon_outfile}" "$@"
+  fi
+  exit $?
+else
+  hadoop_java_exec "${COMMAND}" "${CLASS}" "$@"
+fi
+

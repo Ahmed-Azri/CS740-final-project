@@ -1,0 +1,72 @@
+1. Set up the basic experiment structure
+
+we need the Rspec file that specify the structure of the experiment. It will also be needed to defined interface, links etc. 
+ 
+ 	See Rspec_demo.xml
+
+ You should be able to import it to the cloudlab edit source xml input
+
+
+2. Create experiment, the easiest step :)
+
+3. set up and run the controller (default port 6653)
+ 
+run following command
+	
+#!/bin/bash
+cd /local
+sudo apt-get update
+sudo apt-get install -y ant openjdk-7-jre openjdk-7-jdk
+
+sudo git clone https://github.com/ZihaoAllen/floodlight.git
+cd floodlight
+sudo ./compile.sh
+sudo ./floodlight.sh
+
+4. install openvswitch
+
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y openvswitch-common openvswitch-switch openvswitch-datapath-source openvswitch-brcompat pkg-config libssl-dev libc-dev autoconf automake	
+sudo module-assistant auto-install openvswitch-datapath
+
+cd /local
+sudo wget http://openvswitch.org/releases/openvswitch-2.3.1.tar.gz
+sudo tar xvfz openvswitch-2.3.1.tar.gz
+cd openvswitch-2.3.1
+
+sudo ./boot.sh
+sudo ./configure
+sudo make
+sudo make install
+
+sudo /sbin/modprobe openvswitch
+	
+sudo mkdir -p /usr/local/etc/openvswitch
+sudo ovsdb-tool create /usr/local/etc/openvswitch/conf.db vswitchd/vswitch.ovsschema
+sudo ovsdb-server --remote=punix:/usr/local/var/run/openvswitch/db.sock \
+                 --remote=db:Open_vSwitch,Open_vSwitch,manager_options \
+                 --private-key=db:Open_vSwitch,SSL,private_key \
+                 --certificate=db:Open_vSwitch,SSL,certificate \
+                 --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert \
+                 --pidfile --detach
+sudo ovs-vsctl --no-wait init
+sudo ovs-vswitchd --pidfile --detach
+
+5. set up openvswitch (see http://groups.geni.net/geni/wiki/GENIExperimenter/Tutorials/OpenFlowOVS/DesignSetup and http://groups.geni.net/geni/wiki/GENIExperimenter/Tutorials/OpenFlowOVS/Execute)
+
+	sudo ovs-vsctl add-br br0
+	sudo ifconfig eth1 0
+	sudo ifconfig eth2 0
+	sudo ifconfig eth3 0
+	sudo ovs-vsctl add-port br0 eth1
+	sudo ovs-vsctl add-port br0 eth2
+	sudo ovs-vsctl add-port br0 eth3
+	sudo ovs-vsctl set-controller br0 tcp:<controller_ip>:6653
+	sudo ovs-vsctl set-fail-mode br0 secure
+
+	useful openvswitch doc: http://roan.logdown.com/posts/191801-set-openvswitch
+
+6. Run ping from host to see the flow table (floodlight default is a learning switch. so you need to ping to make controller which host is from where)
+	at host1
+		ping host2

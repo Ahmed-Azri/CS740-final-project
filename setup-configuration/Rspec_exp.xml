@@ -1,0 +1,87 @@
+<rspec xmlns="http://www.geni.net/resources/rspec/3" xmlns:emulab="http://www.protogeni.net/resources/rspec/ext/emulab/1" xmlns:tour="http://www.protogeni.net/resources/rspec/ext/apt-tour/1" xmlns:jacks="http://www.protogeni.net/resources/rspec/ext/jacks/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.geni.net/resources/rspec/3    http://www.geni.net/resources/rspec/3/request.xsd" type="request">
+<node xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS">
+	<routable_control_ip xmlns="http://www.protogeni.net/resources/rspec/ext/emulab/1"/>
+	<icon xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" url="https://www.emulab.net/protogeni/jacks-stable/images/router.svg"/>
+	<site xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" id="44"/>
+	<sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+	</sliver_type>
+	<services xmlns="http://www.geni.net/resources/rspec/3"/>
+
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if0">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.11" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if1">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.12" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if2">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.13" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+
+</node><node xmlns="http://www.geni.net/resources/rspec/3" client_id="controller">
+	<icon xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" url="https://www.emulab.net/protogeni/jacks-stable/images/server.svg"/>
+	<site xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" id="44"/>
+	<routable_control_ip xmlns="http://www.protogeni.net/resources/rspec/ext/emulab/1"/>
+	<sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+		
+	</sliver_type>
+	
+	<services xmlns="http://www.geni.net/resources/rspec/3"/>
+</node><node xmlns="http://www.geni.net/resources/rspec/3" client_id="host1">
+	<icon xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" url="https://www.emulab.net/protogeni/jacks-stable/images/server.svg"/>
+	<site xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" id="44"/>
+	<routable_control_ip xmlns="http://www.protogeni.net/resources/rspec/ext/emulab/1"/>
+	<sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+		
+	</sliver_type>
+	
+	<services xmlns="http://www.geni.net/resources/rspec/3"/>
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="host1:if0">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.1" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+</node><node xmlns="http://www.geni.net/resources/rspec/3" client_id="host2">
+	<icon xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" url="https://www.emulab.net/protogeni/jacks-stable/images/server.svg"/>
+	<site xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" id="44"/>
+	<routable_control_ip xmlns="http://www.protogeni.net/resources/rspec/ext/emulab/1"/>
+	<sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+		
+	</sliver_type>
+	
+	<services xmlns="http://www.geni.net/resources/rspec/3"/>
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="host2:if0">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.2" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+</node><node xmlns="http://www.geni.net/resources/rspec/3" client_id="host3">
+	<icon xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" url="https://www.emulab.net/protogeni/jacks-stable/images/server.svg"/>
+	<site xmlns="http://www.protogeni.net/resources/rspec/ext/jacks/1" id="44"/>
+	<routable_control_ip xmlns="http://www.protogeni.net/resources/rspec/ext/emulab/1"/>
+	<sliver_type xmlns="http://www.geni.net/resources/rspec/3" name="emulab-xen">
+		
+	</sliver_type>
+	
+	<services xmlns="http://www.geni.net/resources/rspec/3"/>
+	<interface xmlns="http://www.geni.net/resources/rspec/3" client_id="host3:if0">
+		<ip xmlns="http://www.geni.net/resources/rspec/3" address="10.10.1.3" type="ipv4" netmask="255.255.255.0"/>
+	</interface>
+</node><link xmlns="http://www.geni.net/resources/rspec/3" client_id="lan0">
+	<link_type xmlns="http://www.geni.net/resources/rspec/3" name="lan"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if0"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="host1:if0"/>
+	<property source_id="OVS:if0" dest_id="host1:if0" capacity="100000"/>
+	<property source_id="host1:if0" dest_id="OVS:if0" capacity="100000"/>
+</link><link xmlns="http://www.geni.net/resources/rspec/3" client_id="lan1">
+	<link_type xmlns="http://www.geni.net/resources/rspec/3" name="lan"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if1"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="host2:if0"/>
+	<property source_id="OVS:if1" dest_id="host2:if0" capacity="100000"/>
+	<property source_id="host2:if0" dest_id="OVS:if1" capacity="100000"/>
+</link><link xmlns="http://www.geni.net/resources/rspec/3" client_id="lan2">
+	<link_type xmlns="http://www.geni.net/resources/rspec/3" name="lan"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="OVS:if2"/>
+	<interface_ref xmlns="http://www.geni.net/resources/rspec/3" client_id="host3:if0"/>
+	<property source_id="OVS:if2" dest_id="host3:if0" capacity="100000"/>
+	<property source_id="host3:if0" dest_id="OVS:if2" capacity="100000"/>
+</link><rspec_tour xmlns="http://www.protogeni.net/resources/rspec/ext/apt-tour/1">
+		<description type="markdown">openflow sdn star</description>
+	</rspec_tour></rspec>

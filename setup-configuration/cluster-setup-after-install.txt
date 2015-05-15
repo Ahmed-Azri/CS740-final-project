@@ -1,0 +1,21 @@
+1. go to hadoop-dist/target
+2. change the etc/hadoop/core-site.xml first to point to namenode address, set up namenode configurations in hdfs-site.xml
+3. changes the JAVA_HOME to amd64 in hadoop-env.sh and start datanode/namenode
+4. the examples is in 
+'sudo bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-3.0.0-SNAPSHOT.jar TestDFSIO -write -nrFiles 64 -fileSize 1KB'
+
+go to http://namenode:50070 for information on namenode
+
+Experiment result: 
+total read execution time in sec: 68.08
+total write execution time in sec: 104.27
+Read throughput (Mb/sec): 1.8801410105757932
+Write throughput (Mb/sec): 1.2275822384194879
+Cleaning up test files
+
+
+Experiment result: 
+total read execution time in sec: 112.587
+total write execution time in sec: 99.258
+Read throughput (Mb/sec): 1.1368985762121737
+Write throughput (Mb/sec): 1.2895685990046144
